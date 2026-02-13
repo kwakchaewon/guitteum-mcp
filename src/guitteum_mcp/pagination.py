@@ -1,6 +1,7 @@
 """3일 윈도우 순회 + 인메모리 캐시 기반 가상 페이지네이션"""
 
 import logging
+import os
 from datetime import date, timedelta
 
 from guitteum_mcp.api_client import fetch_speeches
@@ -9,8 +10,13 @@ from guitteum_mcp.models import SpeechData
 
 logger = logging.getLogger(__name__)
 
-# 수집 시작일 (이명박 정부 취임)
-COLLECT_START = date(2008, 2, 25)
+
+def _get_collect_start() -> date:
+    """수집 시작일. COLLECT_START_DATE 환경변수(YYYYMMDD)로 조정 가능."""
+    raw = os.environ.get("COLLECT_START_DATE", "")
+    if raw and len(raw) == 8 and raw.isdigit():
+        return date(int(raw[:4]), int(raw[4:6]), int(raw[6:8]))
+    return date(2008, 2, 25)  # 기본값: 이명박 정부 취임
 
 # API 최대 조회 범위 (일)
 WINDOW_DAYS = 3
@@ -40,7 +46,7 @@ async def _load_all() -> None:
     speeches: list[SpeechData] = []
     window_count = 0
 
-    for win_start, win_end in _generate_windows(COLLECT_START, today):
+    for win_start, win_end in _generate_windows(_get_collect_start(), today):
         start_str = win_start.strftime("%Y%m%d")
         end_str = win_end.strftime("%Y%m%d")
 
