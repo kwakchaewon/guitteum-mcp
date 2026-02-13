@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+  <header>
+    <resultCode>200</resultCode>
+    <resultMsg>성공</resultMsg>
+  </header>
+  <body>
+    <totalCount>2</totalCount>
+    <items>
+      <item>
+        <NewsItemId>12345</NewsItemId>
+        <Title>제78주년 광복절 경축사</Title>
+        <DataContents>&lt;p&gt;존경하는 국민 여러분,&lt;/p&gt;&lt;p&gt;오늘은 광복절입니다.&lt;/p&gt;</DataContents>
+        <ApproveDate>20230815</ApproveDate>
+        <SubTitle1>서울 용산 대통령실</SubTitle1>
+        <OriginalUrl>https://www.korea.kr/news/12345</OriginalUrl>
+        <MinisterCode>대통령</MinisterCode>
+      </item>
+      <item>
+        <NewsItemId>12346</NewsItemId>
+        <Title>한미 정상회담 공동성명</Title>
+        <DataContents>&lt;p&gt;바이든 대통령과 회담을 가졌습니다.&lt;/p&gt;</DataContents>
+        <ApproveDate>20230426</ApproveDate>
+        <SubTitle1>미국 워싱턴</SubTitle1>
+        <OriginalUrl>https://www.korea.kr/news/12346</OriginalUrl>
+        <MinisterCode>대통령</MinisterCode>
+      </item>
+    </items>
+  </body>
+</response>
