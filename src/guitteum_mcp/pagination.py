@@ -95,17 +95,25 @@ def _dedupe_and_sort(speeches: list[SpeechData]) -> list[SpeechData]:
     return unique
 
 
+CHECKPOINT_INTERVAL = 100  # 중간 저장 주기 (API 호출 횟수)
+
+
 async def _fetch_range(
-    start: date, end: date, max_calls: int = MAX_API_CALLS
+    start: date,
+    end: date,
+    max_calls: int = MAX_API_CALLS,
+    existing_speeches: list[SpeechData] | None = None,
 ) -> tuple[list[SpeechData], date]:
     """지정 날짜 범위를 3일 윈도우로 순회하며 연설문을 수집한다.
 
     max_calls에 도달하면 조기 중단한다.
+    CHECKPOINT_INTERVAL마다 중간 저장하여 중단 시 데이터 유실을 방지한다.
 
     Returns:
         (수집된 연설문 리스트, 마지막으로 수집 완료한 윈도우 종료일)
     """
     speeches: list[SpeechData] = []
+    all_speeches = list(existing_speeches) if existing_speeches else []
     call_count = 0
     last_window_end = start
 
@@ -137,12 +145,14 @@ async def _fetch_range(
         call_count += 1
         last_window_end = win_end
 
-        if call_count % 100 == 0:
+        if call_count % CHECKPOINT_INTERVAL == 0:
+            merged = _dedupe_and_sort(all_speeches + speeches)
+            _save_cache(merged, last_window_end.strftime("%Y%m%d"))
             logger.info(
-                "수집 진행: %d/%d 호출, %d건 수집",
+                "중간 저장 완료: %d/%d 호출, %d건",
                 call_count,
                 max_calls,
-                len(speeches),
+                len(merged),
             )
 
     return speeches, last_window_end
@@ -180,7 +190,9 @@ async def _load_all() -> None:
             next_start.strftime("%Y%m%d"),
             today.strftime("%Y%m%d"),
         )
-        new_speeches, last_end = await _fetch_range(next_start, today)
+        new_speeches, last_end = await _fetch_range(
+            next_start, today, existing_speeches=cached_speeches
+        )
         all_speeches = cached_speeches + new_speeches
         save_end = last_end
     else:
