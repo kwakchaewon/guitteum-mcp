@@ -9,7 +9,7 @@ import logging
 import os
 from datetime import date, timedelta
 
-from guitteum_mcp.api_client import fetch_speeches
+from guitteum_mcp.api_client import QuotaExceededError, fetch_speeches
 from guitteum_mcp.config import get_cache_dir
 from guitteum_mcp.mapper import map_item
 from guitteum_mcp.models import SpeechData
@@ -131,6 +131,12 @@ async def _fetch_range(
 
         try:
             items = await fetch_speeches(start_str, end_str)
+        except QuotaExceededError:
+            logger.error(
+                "API 할당량 초과 (429). 수집 즉시 중단합니다. "
+                "data.go.kr에서 API 활용 신청 여부와 일일 호출 한도를 확인하세요."
+            )
+            break
         except Exception:
             logger.exception("API 호출 실패: %s~%s", start_str, end_str)
             call_count += 1
@@ -209,7 +215,15 @@ async def _load_all() -> None:
 
     _cache = _dedupe_and_sort(all_speeches)
     _loaded = True
-    _save_cache(_cache, save_end.strftime("%Y%m%d"))
+
+    # 수집된 데이터가 있을 때만 캐시 저장 (0건으로 "완료" 처리되는 것을 방지)
+    if _cache:
+        _save_cache(_cache, save_end.strftime("%Y%m%d"))
+    else:
+        logger.warning(
+            "수집된 연설문이 0건이므로 캐시를 저장하지 않습니다. "
+            "API 키와 활용 신청 상태를 확인하세요."
+        )
 
     # 수집 미완료 시 안내
     if save_end < today:

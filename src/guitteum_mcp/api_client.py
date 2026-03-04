@@ -12,6 +12,10 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://apis.data.go.kr/1371000/speechService/speechList"
 
 
+class QuotaExceededError(Exception):
+    """API 호출 할당량 초과 시 발생하는 예외."""
+
+
 async def fetch_speeches(start_date: str, end_date: str) -> list[dict]:
     """지정된 날짜 범위의 연설문을 조회한다.
 
@@ -21,6 +25,9 @@ async def fetch_speeches(start_date: str, end_date: str) -> list[dict]:
 
     Returns:
         NewsItem 딕셔너리 리스트
+
+    Raises:
+        QuotaExceededError: API 할당량 초과 (429) 시
     """
     api_key = get_api_key()
     params = {
@@ -31,7 +38,13 @@ async def fetch_speeches(start_date: str, end_date: str) -> list[dict]:
 
     async with httpx.AsyncClient(timeout=20.0) as client:
         resp = await client.get(BASE_URL, params=params)
-        resp.raise_for_status()
+
+    if resp.status_code == 429:
+        raise QuotaExceededError(
+            "API 할당량 초과 (429). data.go.kr에서 해당 API 활용 신청 여부와 일일 호출 한도를 확인하세요."
+        )
+
+    resp.raise_for_status()
 
     parsed = xmltodict.parse(resp.text)
 
