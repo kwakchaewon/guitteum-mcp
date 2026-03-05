@@ -61,11 +61,13 @@ def test_map_item_full():
         "ApproveDate": "08/15/2023 10:00:00",
         "SubTitle1": "서울",
         "OriginalUrl": "https://www.korea.kr/12345",
+        "MinisterCode": "대통령",
     }
     result = map_item(item)
     assert result is not None
     assert result.id == "12345"
     assert result.president == "윤석열"
+    assert result.speaker == "대통령"
     assert result.title == "광복절 경축사"
     assert result.content == "존경하는 국민 여러분"
     assert result.speech_date == "2023-08-15"

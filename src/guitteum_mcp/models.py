@@ -6,6 +6,7 @@ from pydantic import BaseModel
 class SpeechData(BaseModel):
     id: str
     president: str = ""
+    speaker: str = ""
     title: str = ""
     content: str = ""
     date: str = ""

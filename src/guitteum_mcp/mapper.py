@@ -84,6 +84,7 @@ def map_item(item: dict) -> SpeechData | None:
     return SpeechData(
         id=str(news_id),
         president=president,
+        speaker=item.get("MinisterCode", ""),
         title=item.get("Title", ""),
         content=content,
         date=speech_date,
