@@ -48,15 +48,18 @@ async def fetch_speeches(start_date: str, end_date: str) -> list[dict]:
 
     parsed = xmltodict.parse(resp.text)
 
+    header = parsed.get("response", {}).get("header", {})
+    result_code = str(header.get("resultCode", ""))
+    if result_code not in ("0", "00"):
+        logger.warning("API 오류 응답: resultCode=%s, msg=%s",
+                       result_code, header.get("resultMsg", ""))
+        return []
+
     body = parsed.get("response", {}).get("body", {})
     if not body:
         return []
 
-    total = int(body.get("totalCount", 0))
-    if total == 0:
-        return []
-
-    items = body.get("items", {}).get("item", [])
+    items = body.get("NewsItem", [])
     # 단건이면 dict로 옴 → 리스트로 정규화
     if isinstance(items, dict):
         items = [items]

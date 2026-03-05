@@ -34,8 +34,28 @@ def _resolve_president(d: date) -> str:
 
 
 def _parse_date(raw: str) -> date | None:
-    """ApproveDate 문자열(YYYYMMDD 또는 YYYY-MM-DD)을 date로 파싱한다."""
-    cleaned = raw.strip().replace("-", "")
+    """ApproveDate 문자열을 date로 파싱한다.
+
+    지원 형식:
+        - MM/DD/YYYY HH:MM:SS (실제 API 응답 형식)
+        - YYYYMMDD
+        - YYYY-MM-DD
+    """
+    stripped = raw.strip()
+
+    # MM/DD/YYYY HH:MM:SS (실제 API 응답 형식)
+    if "/" in stripped:
+        date_part = stripped.split(" ")[0]
+        parts = date_part.split("/")
+        if len(parts) == 3:
+            try:
+                month, day, year = int(parts[0]), int(parts[1]), int(parts[2])
+                return date(year, month, day)
+            except (ValueError, TypeError):
+                return None
+
+    # YYYYMMDD 또는 YYYY-MM-DD
+    cleaned = stripped.replace("-", "")
     if len(cleaned) >= 8 and cleaned[:8].isdigit():
         return date(int(cleaned[:4]), int(cleaned[4:6]), int(cleaned[6:8]))
     return None
