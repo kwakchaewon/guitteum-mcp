@@ -13,9 +13,7 @@ def test_parse_sample_xml():
     parsed = xmltodict.parse(xml_text)
 
     body = parsed["response"]["body"]
-    assert int(body["totalCount"]) == 2
-
-    items = body["items"]["item"]
+    items = body["NewsItem"]
     assert isinstance(items, list)
     assert len(items) == 2
     assert items[0]["NewsItemId"] == "12345"
@@ -26,18 +24,19 @@ def test_single_item_normalization():
     """단건 응답(dict)을 리스트로 정규화하는 로직 검증"""
     xml = """<?xml version="1.0" encoding="UTF-8"?>
     <response>
+      <header>
+        <resultCode>0</resultCode>
+        <resultMsg>성공</resultMsg>
+      </header>
       <body>
-        <totalCount>1</totalCount>
-        <items>
-          <item>
-            <NewsItemId>99999</NewsItemId>
-            <Title>단건 테스트</Title>
-          </item>
-        </items>
+        <NewsItem>
+          <NewsItemId>99999</NewsItemId>
+          <Title>단건 테스트</Title>
+        </NewsItem>
       </body>
     </response>"""
     parsed = xmltodict.parse(xml)
-    items = parsed["response"]["body"]["items"]["item"]
+    items = parsed["response"]["body"]["NewsItem"]
     # xmltodict은 단건이면 dict 반환
     if isinstance(items, dict):
         items = [items]

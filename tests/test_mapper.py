@@ -12,6 +12,15 @@ def test_strip_html_normalizes_whitespace():
     assert _strip_html("<p>여러   공백</p>  <p>정규화</p>") == "여러 공백 정규화"
 
 
+def test_parse_date_mm_dd_yyyy_with_time():
+    """실제 API 응답 형식: MM/DD/YYYY HH:MM:SS"""
+    assert _parse_date("08/15/2023 10:00:00") == date(2023, 8, 15)
+
+
+def test_parse_date_mm_dd_yyyy_without_time():
+    assert _parse_date("12/01/2023") == date(2023, 12, 1)
+
+
 def test_parse_date_yyyymmdd():
     assert _parse_date("20230815") == date(2023, 8, 15)
 
@@ -49,7 +58,7 @@ def test_map_item_full():
         "NewsItemId": "12345",
         "Title": "광복절 경축사",
         "DataContents": "<p>존경하는 국민 여러분</p>",
-        "ApproveDate": "20230815",
+        "ApproveDate": "08/15/2023 10:00:00",
         "SubTitle1": "서울",
         "OriginalUrl": "https://www.korea.kr/12345",
     }
